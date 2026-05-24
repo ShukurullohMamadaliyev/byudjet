@@ -3,202 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shukurulloh — Oylik Byudjet</title>
+<title>Oylik Byudjet</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --purple: #534AB7; --purple-light: #EEEDFE; --purple-dark: #3C3489;
-    --green: #1D9E75; --green-light: #E1F5EE;
-    --red: #E24B4A; --red-light: #FCEBEB;
-    --amber: #EF9F27;
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --card: #1e1e35;
-    --border: rgba(255,255,255,0.08);
-    --text: #f0f0ff;
-    --muted: rgba(240,240,255,0.5);
-    --radius: 14px;
-    --radius-sm: 8px;
-  }
-  html { background: var(--bg); min-height: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px 48px;
-    color: var(--text);
-  }
-  .page {
-    width: 100%;
-    max-width: 680px;
-  }
-  .hero {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px 28px 24px;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  .avatar {
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--purple), #7F77DD);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 700; color: #fff;
-    margin: 0 auto 14px;
-  }
-  .hero h1 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .hero p { font-size: 13px; color: var(--muted); }
-  .income-row {
-    display: flex; align-items: center; gap: 10px;
-    background: rgba(83,74,183,0.15);
-    border: 1px solid rgba(83,74,183,0.3);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin-top: 18px;
-  }
-  .income-row label { font-size: 13px; color: var(--muted); white-space: nowrap; }
-  .income-row input {
-    background: transparent; border: none; outline: none;
-    color: var(--purple); font-size: 16px; font-weight: 700;
-    width: 160px; font-family: inherit;
-  }
-  .income-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .income-badge {
-    margin-left: auto; font-size: 12px; font-weight: 600;
-    background: rgba(83,74,183,0.25); color: #AFA9EC;
-    padding: 3px 10px; border-radius: 20px;
-    white-space: nowrap;
-  }
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0,1fr));
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .mcard {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    text-align: center;
-  }
-  .mcard-icon { font-size: 20px; margin-bottom: 6px; }
-  .mcard-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
-  .mcard-value { font-size: 15px; font-weight: 700; }
-  .mcard-pct { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .warn {
-    background: rgba(226,75,74,0.12);
-    border: 1px solid rgba(226,75,74,0.3);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 12px; color: #F09595;
-    margin-bottom: 14px; display: none;
-    align-items: center; gap: 8px;
-  }
-  .section-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-  .section-title {
-    font-size: 13px; font-weight: 600;
-    color: var(--muted); text-transform: uppercase;
-    letter-spacing: .07em; margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .chart-wrap {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 20px;
-    align-items: center;
-  }
-  @media(max-width:480px) { .chart-wrap { grid-template-columns: 1fr; } }
-  .donut-container { position: relative; width: 180px; height: 180px; }
-  .donut-center {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    text-align: center; pointer-events: none;
-  }
-  .donut-center-val { font-size: 16px; font-weight: 700; color: var(--text); }
-  .donut-center-label { font-size: 10px; color: var(--muted); }
-  .legend { display: flex; flex-direction: column; gap: 6px; }
-  .leg-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-  .leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .leg-name { flex: 1; color: var(--text); }
-  .leg-pct { color: var(--muted); min-width: 36px; text-align: right; font-weight: 600; }
-  .cat-list { display: flex; flex-direction: column; gap: 10px; }
-  .cat-item {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-  }
-  .cat-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .cat-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .cat-name { font-size: 13px; font-weight: 600; flex: 1; color: var(--text); }
-  .cat-amount { font-size: 13px; font-weight: 700; }
-  .cat-pct { font-size: 11px; color: var(--muted); }
-  .slider-wrap { display: flex; align-items: center; gap: 10px; }
-  .slider-wrap input[type=range] {
-    flex: 1; height: 4px;
-    -webkit-appearance: none; appearance: none;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px; outline: none; cursor: pointer;
-  }
-  .slider-wrap input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px;
-    border-radius: 50%; border: 2px solid var(--bg);
-    cursor: pointer;
-  }
-  .bar-track { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.07); margin-top: 6px; overflow:hidden; }
-  .bar-fill { height: 100%; border-radius: 2px; transition: width .25s; }
-  .pdf-btn {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, var(--purple), #7F77DD);
-    color: #fff;
-    border: none; border-radius: var(--radius);
-    font-size: 15px; font-weight: 700;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    transition: opacity .2s, transform .1s;
-    letter-spacing: .02em;
-  }
-  .pdf-btn:hover { opacity: .92; }
-  .pdf-btn:active { transform: scale(0.98); }
-  .pdf-btn:disabled { opacity: .5; cursor: not-allowed; }
-  .footer-note {
-    text-align: center; font-size: 11px; color: var(--muted);
-    margin-top: 20px; opacity: .6;
-  }
-  @media(max-width:400px) {
-    .metrics { grid-template-columns: repeat(2, 1fr); }
-    .mcard-value { font-size: 13px; }
-    .hero { padding: 20px 16px; }
-    body { padding: 12px 10px 40px; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#534AB7;--purple-d:#3C3489;
+  --green:#1D9E75;--red:#E24B4A;--amber:#EF9F27;
+  --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e35;
+  --border:rgba(255,255,255,0.08);--text:#f0f0ff;
+  --muted:rgba(240,240,255,0.5);--radius:14px;--radius-sm:8px;
+}
+html{background:var(--bg);min-height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;display:flex;justify-content:center;padding:24px 16px 48px;color:var(--text)}
+.page{width:100%;max-width:680px}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 28px 24px;margin-bottom:16px;text-align:center}
+.avatar-wrap{position:relative;width:72px;height:72px;margin:0 auto 14px;cursor:pointer}
+.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7F77DD);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;overflow:hidden;border:3px solid rgba(83,74,183,0.5)}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-edit{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid var(--bg)}
+#photoInput{display:none}
+.hero h1{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.hero p{font-size:13px;color:var(--muted)}
+.income-row{display:flex;align-items:center;gap:10px;background:rgba(83,74,183,0.15);border:1px solid rgba(83,74,183,0.3);border-radius:var(--radius-sm);padding:10px 14px;margin-top:10px}
+.income-row label{font-size:13px;color:var(--muted);white-space:nowrap}
+.income-row input{background:transparent;border:none;outline:none;font-size:15px;font-weight:700;font-family:inherit;flex:1;min-width:0}
+.income-row input[type=number]{color:var(--purple)}
+.income-row input[type=text]{color:#AFA9EC}
+.income-row input::-webkit-inner-spin-button{-webkit-appearance:none}
+.income-badge{margin-left:auto;font-size:12px;font-weight:600;background:rgba(83,74,183,0.25);color:#AFA9EC;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.mcard-icon{font-size:20px;margin-bottom:6px}
+.mcard-label{font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.mcard-value{font-size:15px;font-weight:700}
+.mcard-pct{font-size:11px;color:var(--muted);margin-top:2px}
+.warn{background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:#F09595;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.section-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.chart-wrap{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center}
+@media(max-width:480px){.chart-wrap{grid-template-columns:1fr}}
+.donut-container{position:relative;width:180px;height:180px}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-center-val{font-size:16px;font-weight:700;color:var(--text)}
+.donut-center-label{font-size:10px;color:var(--muted)}
+.legend{display:flex;flex-direction:column;gap:6px}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.leg-name{flex:1;color:var(--text)}
+.leg-pct{color:var(--muted);min-width:36px;text-align:right;font-weight:600}
+.cat-list{display:flex;flex-direction:column;gap:10px}
+.cat-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.cat-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.cat-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;cursor:pointer}
+.cat-name-input{font-size:13px;font-weight:600;flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:inherit;min-width:0}
+.cat-name-input:focus{border-bottom:1px solid rgba(83,74,183,0.5)}
+.cat-amount{font-size:13px;font-weight:700}
+.cat-pct{font-size:11px;color:var(--muted)}
+.del-btn{background:rgba(226,75,74,0.15);border:none;color:#F09595;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.del-btn:hover{background:rgba(226,75,74,0.35)}
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.slider-wrap input[type=range]{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.1);border-radius:2px;outline:none;cursor:pointer}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;border:2px solid var(--bg);cursor:pointer}
+.bar-track{height:3px;border-radius:2px;background:rgba(255,255,255,0.07);margin-top:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .25s}
+.add-btn{width:100%;padding:11px;background:rgba(83,74,183,0.12);border:1px dashed rgba(83,74,183,0.4);border-radius:var(--radius-sm);color:#AFA9EC;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px}
+.add-btn:hover{background:rgba(83,74,183,0.22)}
+.pdf-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--purple),#7F77DD);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:opacity .2s,transform .1s;letter-spacing:.02em}
+.pdf-btn:hover{opacity:.92}
+.pdf-btn:active{transform:scale(0.98)}
+.pdf-btn:disabled{opacity:.5;cursor:not-allowed}
+.footer-note{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;opacity:.6}
+.color-picker{width:22px;height:22px;border-radius:50%;border:none;padding:0;cursor:pointer;background:none;overflow:hidden}
+.color-picker::-webkit-color-swatch-wrapper{padding:0}
+.color-picker::-webkit-color-swatch{border:none;border-radius:50%}
+@media(max-width:400px){.metrics{grid-template-columns:repeat(2,1fr)}.mcard-value{font-size:13px}.hero{padding:20px 16px}body{padding:12px 10px 40px}}
 </style>
 </head>
 <body>
 <div class="page">
 
   <div class="hero">
-    <div class="avatar" id="avatarEl">S</div>
+    <div class="avatar-wrap" onclick="document.getElementById('photoInput').click()" title="Rasm yuklash">
+      <div class="avatar" id="avatarEl"><span id="avatarLetter">S</span></div>
+      <div class="avatar-edit">&#9998;</div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*">
     <h1 id="nameDisplay">Shukurulloh</h1>
     <p>Oylik byudjet rejasi · 2026</p>
     <div class="income-row" style="margin-bottom:8px">
-      <label>&#128100; Ismingiz:</label>
-      <input type="text" id="nameInput" value="Shukurulloh" placeholder="Ismingizni kiriting" style="background:transparent;border:none;outline:none;color:#AFA9EC;font-size:15px;font-weight:700;font-family:inherit;flex:1">
+      <label>&#128100;</label>
+      <input type="text" id="nameInput" value="Shukurulloh" placeholder="Ismingiz">
     </div>
     <div class="income-row">
-      <label>&#128181; Oylik daromad:</label>
+      <label>&#128181; Daromad:</label>
       <input type="number" id="incomeInput" value="12000000" step="100000" min="0">
       <span class="income-badge" id="incomeBadge">12 000 000 so'm</span>
     </div>
@@ -225,16 +124,14 @@
     </div>
   </div>
 
-  <div class="warn" id="warnEl">
-    &#9888; <span id="warnText"></span>
-  </div>
+  <div class="warn" id="warnEl">&#9888; <span id="warnText"></span></div>
 
   <div class="section-card">
     <div class="section-title">&#9685; Taqsimot</div>
     <div class="chart-wrap">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div style="display:flex;flex-direction:column;align-items:center">
         <div class="donut-container">
-          <canvas id="donutC" role="img" aria-label="Xarajatlar donut diagrammasi" width="180" height="180">Xarajatlar taqsimoti</canvas>
+          <canvas id="donutC" role="img" aria-label="Xarajatlar donut diagrammasi" width="180" height="180">Taqsimot</canvas>
           <div class="donut-center">
             <div class="donut-center-val" id="donut-total">—</div>
             <div class="donut-center-label">jami</div>
@@ -248,89 +145,105 @@
   <div class="section-card">
     <div class="section-title">&#9881; Toifalarni sozlang</div>
     <div class="cat-list" id="catList"></div>
+    <button class="add-btn" onclick="addCat()">&#43; Yangi toifa qo'shish</button>
   </div>
 
-  <button class="pdf-btn" id="pdfBtn" onclick="genPDF()">
-    &#8595; PDF yuklab olish
-  </button>
-
+  <button class="pdf-btn" id="pdfBtn" onclick="genPDF()">&#8595; PDF yuklab olish</button>
   <div class="footer-note">Dastur ishlab chiquvchisi: Shukurulloh · +998 20 002 27 29</div>
 
 </div>
-
 <script>
-const CATS = [
-  { name: "Oila (umumiy)",       a: 1500000, c: '#534AB7' },
-  { name: "Ovqat",               a: 1800000, c: '#1D9E75' },
-  { name: "To'g'ri ovqatlanish", a:  400000, c: '#5DCAA5' },
-  { name: "Kiyim",               a:  600000, c: '#D85A30' },
-  { name: "Mashina",             a:  800000, c: '#378ADD' },
-  { name: "Taxi",                a:  300000, c: '#85B7EB' },
-  { name: "Online aloqa",        a:  150000, c: '#D4537E' },
-  { name: "Ichimliklar",         a:  200000, c: '#97C459' },
-  { name: "Zal (sport)",         a:  200000, c: '#639922' },
-  { name: "Davolanish",          a:  300000, c: '#EF9F27' },
-  { name: "O'yin-kulgi",         a:  400000, c: '#E24B4A' },
-  { name: "Qiziq narsalar",      a:  300000, c: '#7F77DD' },
-  { name: "Ehson",               a:  150000, c: '#9FE1CB' },
-  { name: "Jamg'arma",           a: 1800000, c: '#F4C775' },
-];
+const PALETTE = ['#534AB7','#1D9E75','#5DCAA5','#D85A30','#378ADD','#85B7EB','#D4537E','#97C459','#639922','#EF9F27','#E24B4A','#7F77DD','#9FE1CB','#F4C775','#F0997B','#AFA9EC'];
+let palIdx = 0;
+const nextColor = () => PALETTE[palIdx++ % PALETTE.length];
 
-const fmt = n => Math.round(n).toLocaleString('ru-RU');
+let CATS = [
+  {name:"Oila (umumiy)",       a:1500000, c:'#534AB7'},
+  {name:"Ovqat",               a:1800000, c:'#1D9E75'},
+  {name:"To'g'ri ovqatlanish", a:400000,  c:'#5DCAA5'},
+  {name:"Kiyim",               a:600000,  c:'#D85A30'},
+  {name:"Mashina",             a:800000,  c:'#378ADD'},
+  {name:"Taxi",                a:300000,  c:'#85B7EB'},
+  {name:"Online aloqa",        a:150000,  c:'#D4537E'},
+  {name:"Ichimliklar",         a:200000,  c:'#97C459'},
+  {name:"Zal (sport)",         a:200000,  c:'#639922'},
+  {name:"Davolanish",          a:300000,  c:'#EF9F27'},
+  {name:"O'yin-kulgi",         a:400000,  c:'#E24B4A'},
+  {name:"Qiziq narsalar",      a:300000,  c:'#7F77DD'},
+  {name:"Ehson",               a:150000,  c:'#9FE1CB'},
+  {name:"Jamg'arma",           a:1800000, c:'#F4C775'},
+];
+palIdx = CATS.length % PALETTE.length;
+
+let photoDataUrl = null;
+
+const fmt  = n => Math.round(n).toLocaleString('ru-RU');
 const fmts = n => fmt(n) + " so'm";
-const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '0%';
-const income = () => parseInt(document.getElementById('incomeInput').value)||0;
-const totalExp = () => CATS.reduce((s,c)=>s+c.a,0);
-const savings = () => (CATS.find(c=>c.name==="Jamg'arma")||{a:0}).a;
+const pct  = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '0%';
+const income    = () => parseInt(document.getElementById('incomeInput').value)||0;
+const totalExp  = () => CATS.reduce((s,c)=>s+c.a,0);
+const savingsAmt= () => {const s=CATS.find(c=>c.name==="Jamg'arma"); return s?s.a:0;};
 
 let donut = null;
 
 function update() {
-  const inc = income(), tot = totalExp(), sav = savings(), rem = inc - tot;
+  const inc=income(), tot=totalExp(), sav=savingsAmt(), rem=inc-tot;
   document.getElementById('incomeBadge').textContent = fmts(inc);
-  document.getElementById('m-exp').textContent = fmt(tot);
+  document.getElementById('m-exp').textContent  = fmt(tot);
   document.getElementById('m-exp-p').textContent = pct(tot,inc);
-  document.getElementById('m-sav').textContent = fmt(sav);
+  document.getElementById('m-sav').textContent  = fmt(sav);
   document.getElementById('m-sav-p').textContent = pct(sav,inc);
   const remEl = document.getElementById('m-rem');
   remEl.textContent = fmt(rem);
-  remEl.style.color = rem >= 0 ? '#1D9E75' : '#E24B4A';
+  remEl.style.color = rem>=0?'#1D9E75':'#E24B4A';
   document.getElementById('m-rem-p').textContent = (rem<0?'-':'')+pct(Math.abs(rem),inc);
   document.getElementById('donut-total').textContent = fmt(tot);
-
   const warn = document.getElementById('warnEl');
-  if (rem < 0) {
-    warn.style.display = 'flex';
-    document.getElementById('warnText').textContent = "Xarajatlar daromaddan " + fmts(Math.abs(rem)) + " oshdi!";
-  } else warn.style.display = 'none';
-
-  CATS.forEach((cat,i) => {
-    const p = inc ? Math.min(100, cat.a/inc*100) : 0;
-    const el = document.getElementById('pct-'+i);
-    const am = document.getElementById('amt-'+i);
-    const fi = document.getElementById('fi-'+i);
-    const th = document.getElementById('th-'+i);
-    if(el) el.textContent = pct(cat.a,inc);
-    if(am) am.textContent = fmts(cat.a);
-    if(fi) fi.style.width = p+'%';
-    if(th) th.style.background = cat.c;
+  const pdfBtn = document.getElementById('pdfBtn');
+  if(rem<0){
+    warn.style.display='flex';
+    document.getElementById('warnText').textContent="Xarajatlar daromaddan "+fmts(Math.abs(rem))+" oshdi! PDF yaratish mumkin emas.";
+    pdfBtn.disabled=true;
+    pdfBtn.style.background='rgba(100,100,130,0.4)';
+    pdfBtn.innerHTML='&#8856; PDF yaratib bo\'lmaydi — xarajatni kamaytiring';
+  } else {
+    warn.style.display='none';
+    pdfBtn.disabled=false;
+    pdfBtn.style.background='linear-gradient(135deg,var(--purple),#7F77DD)';
+    pdfBtn.innerHTML='&#8595; PDF yuklab olish';
+  }
+  CATS.forEach((_,i)=>{
+    const p=inc?Math.min(100,CATS[i].a/inc*100):0;
+    const el=document.getElementById('pct-'+i);
+    const am=document.getElementById('amt-'+i);
+    const fi=document.getElementById('fi-'+i);
+    if(el)el.textContent=pct(CATS[i].a,inc);
+    if(am){am.textContent=fmts(CATS[i].a);am.style.color=CATS[i].c;}
+    if(fi)fi.style.width=p+'%';
   });
-
   updateDonut();
   updateLegend(inc);
 }
 
 function updateDonut() {
-  if (donut) { donut.data.datasets[0].data = CATS.map(c=>c.a); donut.update(); return; }
-  donut = new Chart(document.getElementById('donutC'), {
-    type: 'doughnut',
-    data: { labels: CATS.map(c=>c.name), datasets: [{ data: CATS.map(c=>c.a), backgroundColor: CATS.map(c=>c.c), borderWidth: 1.5, borderColor: '#1e1e35' }] },
-    options: { responsive: false, cutout: '65%', plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ' '+fmts(ctx.raw) } } } }
+  const data=CATS.map(c=>c.a||1);
+  const colors=CATS.map(c=>c.c);
+  const labels=CATS.map(c=>c.name);
+  if(donut){
+    donut.data.labels=labels;
+    donut.data.datasets[0].data=data;
+    donut.data.datasets[0].backgroundColor=colors;
+    donut.update();return;
+  }
+  donut=new Chart(document.getElementById('donutC'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:1.5,borderColor:'#1e1e35'}]},
+    options:{responsive:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmts(ctx.raw)}}}}
   });
 }
 
 function updateLegend(inc) {
-  document.getElementById('legendEl').innerHTML = CATS.map(cat => `
+  document.getElementById('legendEl').innerHTML=CATS.map(cat=>`
     <div class="leg-row">
       <span class="leg-dot" style="background:${cat.c}"></span>
       <span class="leg-name">${cat.name}</span>
@@ -339,91 +252,139 @@ function updateLegend(inc) {
 }
 
 function buildCats() {
-  const inc = income();
-  document.getElementById('catList').innerHTML = CATS.map((cat,i) => {
-    const p = inc ? Math.min(100,cat.a/inc*100) : 0;
-    return `<div class="cat-item">
+  const inc=income();
+  document.getElementById('catList').innerHTML=CATS.map((cat,i)=>{
+    const p=inc?Math.min(100,cat.a/inc*100):0;
+    return `<div class="cat-item" id="ci-${i}">
       <div class="cat-header">
-        <span class="cat-dot" style="background:${cat.c}"></span>
-        <span class="cat-name">${cat.name}</span>
+        <input type="color" class="color-picker" value="${cat.c}" onchange="changeColor(${i},this.value)" title="Rang o'zgartirish">
+        <input class="cat-name-input" value="${cat.name}" onchange="changeName(${i},this.value)" placeholder="Toifa nomi">
         <span class="cat-pct" id="pct-${i}">${pct(cat.a,inc)}</span>
         <span class="cat-amount" style="color:${cat.c}" id="amt-${i}">${fmts(cat.a)}</span>
+        <button class="del-btn" onclick="delCat(${i})" title="O'chirish">&#10005;</button>
       </div>
       <div class="slider-wrap">
-        <input type="range" id="sl-${i}" min="0" max="20000000" step="50000" value="${cat.a}" oninput="onSlide(${i},this.value)" style="accent-color:${cat.c}">
+        <input type="range" min="0" max="20000000" step="50000" value="${cat.a}" oninput="onSlide(${i},this.value)" style="accent-color:${cat.c}">
       </div>
       <div class="bar-track"><div class="bar-fill" id="fi-${i}" style="width:${p}%;background:${cat.c}"></div></div>
-      <input type="range" id="th-${i}" style="display:none">
     </div>`;
   }).join('');
 }
 
-function onSlide(i, v) { CATS[i].a = parseInt(v); update(); }
+function onSlide(i,v){CATS[i].a=parseInt(v);update();}
+function changeName(i,v){CATS[i].name=v||'Toifa';update();}
+function changeColor(i,v){CATS[i].c=v;buildCats();update();}
 
-document.getElementById('incomeInput').addEventListener('input', update);
-
-const nameInput = document.getElementById('nameInput');
-function updateName() {
-  const n = nameInput.value.trim() || 'Foydalanuvchi';
-  document.getElementById('nameDisplay').textContent = n;
-  document.getElementById('avatarEl').textContent = n.charAt(0).toUpperCase();
+function delCat(i){
+  if(CATS.length<=1)return;
+  CATS.splice(i,1);
+  buildCats();update();
 }
-nameInput.addEventListener('input', updateName);
 
-function genPDF() {
-  const btn = document.getElementById('pdfBtn');
-  btn.disabled = true; btn.textContent = 'Tayyorlanmoqda...';
-  setTimeout(() => {
-    try {
-      const {jsPDF} = window.jspdf;
-      const userName = document.getElementById('nameInput').value.trim() || 'Foydalanuvchi';
-      const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      const inc = income(), tot = totalExp(), sav = savings(), rem = inc - tot;
-      const W=210, ML=15, CW=180;
-      const fmtP = n => Math.round(n).toLocaleString('ru-RU') + " so'm";
-      const pctP = (a,b) => b?(a/b*100).toFixed(1)+'%':'0%';
+function addCat(){
+  CATS.push({name:'Yangi toifa',a:200000,c:nextColor()});
+  buildCats();update();
+  const list=document.getElementById('catList');
+  list.lastElementChild&&list.lastElementChild.scrollIntoView({behavior:'smooth'});
+}
 
-      doc.setFillColor(15,15,26); doc.rect(0,0,W,297,'F');
-      doc.setFillColor(26,26,46); doc.roundedRect(ML,10,CW,35,4,4,'F');
-      doc.setFillColor(83,74,183); doc.circle(ML+10,27.5,7,'F');
-      doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica','bold');
-      doc.text(userName.charAt(0).toUpperCase(), ML+10, 30, {align:'center'});
-      doc.setFontSize(16); doc.text(userName, ML+22, 25);
-      doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,220);
-      doc.text('Oylik byudjet rejasi · 2026', ML+22, 31);
-      doc.setFontSize(10); doc.setTextColor(127,119,221);
-      doc.text('Daromad: '+fmtP(inc), ML+22, 38);
+document.getElementById('incomeInput').addEventListener('input',update);
 
-      let y = 52;
-      const cards3 = [
-        {label:'Jami xarajat', val:fmtP(tot), pct:pctP(tot,inc), r:226,g:75,b:74},
-        {label:"Jamg'arma", val:fmtP(sav), pct:pctP(sav,inc), r:29,g:158,b:117},
-        {label:'Qoldiq', val:fmtP(Math.abs(rem)), pct:(rem<0?'-':'')+pctP(Math.abs(rem),inc), r:rem>=0?29:226,g:rem>=0?158:75,b:rem>=0?117:74},
+const nameInput=document.getElementById('nameInput');
+function updateName(){
+  const n=nameInput.value.trim()||'Foydalanuvchi';
+  document.getElementById('nameDisplay').textContent=n;
+  if(!photoDataUrl) document.getElementById('avatarLetter').textContent=n.charAt(0).toUpperCase();
+}
+nameInput.addEventListener('input',updateName);
+
+document.getElementById('photoInput').addEventListener('change',function(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    photoDataUrl=ev.target.result;
+    const av=document.getElementById('avatarEl');
+    av.innerHTML=`<img src="${photoDataUrl}" alt="profil">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+function hexRgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+
+function genPDF(){
+  const btn=document.getElementById('pdfBtn');
+  btn.disabled=true;btn.textContent='Tayyorlanmoqda...';
+  setTimeout(()=>{
+    try{
+      const {jsPDF}=window.jspdf;
+      const userName=document.getElementById('nameInput').value.trim()||'Foydalanuvchi';
+      const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      const inc=income(),tot=totalExp(),sav=savingsAmt(),rem=inc-tot;
+      const W=210,ML=15,CW=180;
+      const fmtP=n=>Math.round(n).toLocaleString('ru-RU')+" so'm";
+      const pctP=(a,b)=>b?(a/b*100).toFixed(1)+'%':'0%';
+
+      doc.setFillColor(15,15,26);doc.rect(0,0,W,297,'F');
+      doc.setFillColor(26,26,46);doc.roundedRect(ML,10,CW,38,4,4,'F');
+
+      if(photoDataUrl){
+        try{
+          doc.addImage(photoDataUrl,'JPEG',ML+3,13,16,16,'','FAST');
+          doc.setDrawColor(83,74,183);doc.setLineWidth(0.5);doc.circle(ML+11,21,8);
+        }catch(e){
+          doc.setFillColor(83,74,183);doc.circle(ML+11,21,8,'F');
+          doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
+          doc.text(userName.charAt(0).toUpperCase(),ML+11,24,{align:'center'});
+        }
+      }else{
+        doc.setFillColor(83,74,183);doc.circle(ML+11,21,8,'F');
+        doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');
+        doc.text(userName.charAt(0).toUpperCase(),ML+11,24,{align:'center'});
+      }
+
+      doc.setTextColor(240,240,255);doc.setFontSize(15);doc.setFont('helvetica','bold');
+      doc.text(userName,ML+24,20);
+      doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(180,180,220);
+      doc.text('Oylik byudjet rejasi · 2026',ML+24,27);
+      doc.setFontSize(10);doc.setTextColor(127,119,221);
+      doc.text('Daromad: '+fmtP(inc),ML+24,34);
+
+      let y=55;
+      const cards3=[
+        {label:'Jami xarajat',val:fmtP(tot),pct:pctP(tot,inc),r:226,g:75,b:74},
+        {label:"Jamg'arma",val:fmtP(sav),pct:pctP(sav,inc),r:29,g:158,b:117},
+        {label:'Qoldiq',val:fmtP(Math.abs(rem)),pct:(rem<0?'-':'')+pctP(Math.abs(rem),inc),r:rem>=0?29:226,g:rem>=0?158:75,b:rem>=0?117:74},
       ];
       const cw3=CW/3-2;
       cards3.forEach((c,i)=>{
         const x=ML+i*(cw3+3);
-        doc.setFillColor(26,26,46); doc.roundedRect(x,y,cw3,22,3,3,'F');
-        doc.setFillColor(c.r,c.g,c.b);
-        doc.roundedRect(x,y,cw3,5,3,3,'F');
-        doc.rect(x,y+2,cw3,3,'F');
-        doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
+        doc.setFillColor(26,26,46);doc.roundedRect(x,y,cw3,22,3,3,'F');
+        doc.setFillColor(c.r,c.g,c.b);doc.roundedRect(x,y,cw3,5,3,3,'F');doc.rect(x,y+2,cw3,3,'F');
+        doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','bold');
         doc.text(c.label,x+cw3/2,y+3.8,{align:'center'});
-        doc.setTextColor(240,240,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+        doc.setTextColor(240,240,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
         doc.text(c.val,x+cw3/2,y+13,{align:'center'});
-        doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(c.r,c.g,c.b);
+        doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(c.r,c.g,c.b);
         doc.text(c.pct,x+cw3/2,y+19,{align:'center'});
       });
       y+=30;
 
-      doc.setFillColor(26,26,46); doc.roundedRect(ML,y,CW,10,3,3,'F');
-      doc.setTextColor(180,180,220); doc.setFontSize(7); doc.setFont('helvetica','bold');
-      const hs=['#','Toifa','Miqdor','Foiz','Bar']; const hw=[8,60,46,20,46];
+      if(rem<0){
+        doc.setFillColor(60,15,15);doc.roundedRect(ML,y,CW,8,2,2,'F');
+        doc.setTextColor(240,100,100);doc.setFontSize(8);doc.setFont('helvetica','bold');
+        doc.text('Ogoh: xarajatlar daromaddan '+fmtP(Math.abs(rem))+' oshdi!',W/2,y+5.5,{align:'center'});
+        y+=12;
+      }
+
+      doc.setFillColor(26,26,46);doc.roundedRect(ML,y,CW,10,3,3,'F');
+      doc.setTextColor(180,180,220);doc.setFontSize(7);doc.setFont('helvetica','bold');
+      const hs=['#','Toifa','Miqdor','Foiz','Bar'];const hw=[8,62,44,20,46];
       let cx=ML+2;
-      hs.forEach((h,i)=>{doc.text(h,cx,y+6.5); cx+=hw[i];});
+      hs.forEach(h=>{doc.text(h,cx,y+6.5);cx+=hw[hs.indexOf(h)];});
       y+=10;
 
       CATS.forEach((cat,idx)=>{
+        if(y>270){doc.addPage();doc.setFillColor(15,15,26);doc.rect(0,0,W,297,'F');y=15;}
         const even=idx%2===0;
         doc.setFillColor(even?22:20,even?22:20,even?38:34);
         doc.rect(ML,y,CW,7,'F');
@@ -431,34 +392,32 @@ function genPDF() {
         const bLen=inc?Math.round(cat.a/inc*18):0;
         const bar='|'.repeat(bLen)+' '.repeat(Math.max(0,18-bLen));
         const rgb=hexRgb(cat.c);
-        doc.setTextColor(210,210,240); doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.setTextColor(210,210,240);doc.setFontSize(7);doc.setFont('helvetica','normal');
         const vals=[String(idx+1),cat.name,fmt(cat.a),p+'%'];
         cx=ML+2;
-        vals.forEach((v,vi)=>{ doc.text(String(v),cx,y+4.8); cx+=hw[vi]; });
-        doc.setTextColor(rgb[0],rgb[1],rgb[2]); doc.setFontSize(6.5);
+        vals.forEach((v,vi)=>{doc.text(String(v),cx,y+4.8);cx+=hw[vi];});
+        doc.setTextColor(rgb[0],rgb[1],rgb[2]);doc.setFontSize(6.5);
         doc.text(bar,cx,y+4.8);
         y+=7;
       });
 
-      doc.setFillColor(30,30,50); doc.rect(ML,y,CW,8,'F');
-      doc.setTextColor(127,119,221); doc.setFontSize(8); doc.setFont('helvetica','bold');
-      doc.text('JAMI', ML+10, y+5.5);
-      doc.text(fmtP(tot), ML+68, y+5.5);
-      doc.text(pctP(tot,inc), ML+114, y+5.5);
-      y+=15;
+      doc.setFillColor(30,30,50);doc.rect(ML,y,CW,8,'F');
+      doc.setTextColor(127,119,221);doc.setFontSize(8);doc.setFont('helvetica','bold');
+      doc.text('JAMI',ML+10,y+5.5);
+      doc.text(fmtP(tot),ML+70,y+5.5);
+      doc.text(pctP(tot,inc),ML+114,y+5.5);
+      y+=14;
 
-      doc.setFillColor(26,26,46); doc.roundedRect(ML,y,CW,10,3,3,'F');
-      doc.setTextColor(180,180,220); doc.setFontSize(8); doc.setFont('helvetica','normal');
-      doc.text('Dastur ishlab chiquvchisi: Shukurulloh  ·  +998 20 002 27 29', W/2,y+6.5,{align:'center'});
-      y+=15;
-      doc.save(userName + '_byudjet.pdf');
-    } catch(e){ alert('Xato: '+e.message); }
+      doc.setFillColor(26,26,46);doc.roundedRect(ML,y,CW,10,3,3,'F');
+      doc.setTextColor(180,180,220);doc.setFontSize(8);doc.setFont('helvetica','normal');
+      doc.text('Dastur ishlab chiquvchisi: Shukurulloh  ·  +998 20 002 27 29',W/2,y+6.5,{align:'center'});
+
+      doc.save(userName+'_byudjet.pdf');
+    }catch(e){alert('Xato: '+e.message);}
     btn.disabled=false;
     btn.innerHTML='&#8595; PDF yuklab olish';
   },120);
 }
-
-function hexRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
 
 buildCats();
 update();
